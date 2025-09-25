@@ -34,6 +34,7 @@ builder.Services.AddScoped<IClienteRestricaoRepository, ClienteRestricaoReposito
 // Services
 builder.Services.AddScoped<IComandaService, ComandaService>();
 builder.Services.AddScoped<IVendaService, VendaService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
 
 // Novos serviços do sistema administrativo
 builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();

@@ -60,6 +60,7 @@ public class ProdutoDto
     public string Nome { get; set; } = string.Empty;
     public string? Descricao { get; set; }
     public TipoProduto Tipo { get; set; }
+    public string TipoDescricao => Tipo.ToString();
     public decimal PrecoVenda { get; set; }
     public decimal? PrecoCusto { get; set; }
     public string? CodigoBarras { get; set; }
@@ -74,4 +75,46 @@ public class ProdutoDto
     public DateTime CriadoEm { get; set; }
     public DateTime? AtualizadoEm { get; set; }
     public bool Ativo { get; set; }
+    
+    // Propriedades calculadas
+    public bool EstoqueBaixo => !ControlaNaoEstoque && EstoqueAtual <= EstoqueMinimo;
+    public decimal? MargemLucro => PrecoCusto.HasValue && PrecoCusto > 0 
+        ? ((PrecoVenda - PrecoCusto.Value) / PrecoCusto.Value) * 100 
+        : null;
+}
+
+public class ProdutoListDto
+{
+    public int Id { get; set; }
+    public string Nome { get; set; } = string.Empty;
+    public string? Descricao { get; set; }
+    public TipoProduto Tipo { get; set; }
+    public string TipoDescricao => Tipo.ToString();
+    public decimal PrecoVenda { get; set; }
+    public decimal? PrecoCusto { get; set; }
+    public string? CodigoBarras { get; set; }
+    public string? Unidade { get; set; }
+    public bool ControlaNaoEstoque { get; set; }
+    public decimal EstoqueAtual { get; set; }
+    public decimal EstoqueMinimo { get; set; }
+    public bool DisponivelDelivery { get; set; }
+    public bool Ativo { get; set; }
+    
+    // Propriedades calculadas
+    public bool EstoqueBaixo => !ControlaNaoEstoque && EstoqueAtual <= EstoqueMinimo;
+}
+
+public class ProdutoEstoqueDto
+{
+    [Required(ErrorMessage = "ID do produto é obrigatório")]
+    public int ProdutoId { get; set; }
+    
+    [Required(ErrorMessage = "Quantidade é obrigatória")]
+    public decimal Quantidade { get; set; }
+    
+    [Required(ErrorMessage = "Tipo de movimento é obrigatório")]
+    public TipoMovimentoEstoque TipoMovimento { get; set; }
+    
+    [StringLength(200, ErrorMessage = "Observações deve ter no máximo 200 caracteres")]
+    public string? Observacoes { get; set; }
 }
