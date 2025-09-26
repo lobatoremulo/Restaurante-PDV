@@ -7,7 +7,6 @@ using RestaurantePDV.Domain.Enums;
 namespace RestaurantePDV.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 [Authorize]
 public class ProdutosController(IProdutoService produtoService, ILogger<ProdutosController> logger) : ControllerBase
 {
@@ -15,7 +14,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     private readonly ILogger<ProdutosController> _logger = logger;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -30,7 +29,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("ativos")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetActive()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetActive([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -82,7 +81,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("tipo/{tipo}")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByTipo(TipoProduto tipo)
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByTipo(TipoProduto tipo, [FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -97,7 +96,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("buscar/{nome}")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByNome(string nome)
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByNome(string nome, [FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -112,7 +111,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("estoque-baixo")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetComEstoqueBaixo()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetComEstoqueBaixo([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -127,13 +126,12 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("delivery")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetDisponivelDelivery()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetDisponivelDelivery([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
-            //var produtos = await _produtoService.GetDisponivelDeliveryAsync();
-            //return Ok(produtos);
-            return Ok();
+            var produtos = await _produtoService.GetDisponivelDeliveryAsync();
+            return Ok(produtos);
         }
         catch (Exception ex)
         {
@@ -146,13 +144,10 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     [Authorize(Roles = "Admin,Gerente")]
     public async Task<ActionResult<ProdutoDto>> Create([FromBody] ProdutoCreateDto produtoDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         try
         {
             var produto = await _produtoService.CreateAsync(produtoDto);
-            return CreatedAtAction(nameof(GetById), new { id = produto.Id }, produto);
+            return Ok(produto);
         }
         catch (InvalidOperationException ex)
         {
@@ -171,9 +166,6 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     {
         if (id != produtoDto.Id)
             return BadRequest("ID do produto não confere");
-
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
 
         try
         {
@@ -239,9 +231,6 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     [Authorize(Roles = "Admin,Gerente,UsuarioComum")]
     public async Task<ActionResult<ProdutoDto>> AtualizarEstoque([FromBody] ProdutoEstoqueDto estoqueDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         try
         {
             var produto = await _produtoService.AtualizarEstoqueAsync(estoqueDto);
@@ -283,7 +272,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("verificar-codigo-barras/{codigoBarras}")]
-    public async Task<ActionResult<bool>> VerificarCodigoBarras(string codigoBarras, [FromQuery] int? excludeId = null)
+    public async Task<ActionResult<object>> VerificarCodigoBarras(string codigoBarras, [FromQuery] int? excludeId = null)
     {
         try
         {
@@ -298,6 +287,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("tipos")]
+    [ResponseCache(Duration = 3600)]
     public ActionResult<object> GetTipos()
     {
         try
@@ -321,10 +311,15 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     {
         try
         {
-            var todosProdutos = await _produtoService.GetAllAsync();
-            var produtosAtivos = await _produtoService.GetActiveAsync();
-            var produtosEstoqueBaixo = await _produtoService.GetComEstoqueBaixoAsync();
-            //var produtosDelivery = await _produtoService.GetDisponivelDeliveryAsync();
+            var todosProdutosTask = _produtoService.GetAllAsync();
+            var produtosAtivosTask = _produtoService.GetActiveAsync();
+            var produtosEstoqueBaixoTask = _produtoService.GetComEstoqueBaixoAsync();
+
+            await Task.WhenAll(todosProdutosTask, produtosAtivosTask, produtosEstoqueBaixoTask);
+
+            var todosProdutos = await todosProdutosTask;
+            var produtosAtivos = await produtosAtivosTask;
+            var produtosEstoqueBaixo = await produtosEstoqueBaixoTask;
 
             var estatisticas = new
             {
@@ -332,7 +327,6 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
                 ProdutosAtivos = produtosAtivos.Count(),
                 ProdutosInativos = todosProdutos.Count() - produtosAtivos.Count(),
                 ProdutosEstoqueBaixo = produtosEstoqueBaixo.Count(),
-                //ProdutosDelivery = produtosDelivery.Count(),
                 PorTipo = todosProdutos.GroupBy(p => p.Tipo)
                     .Select(g => new { Tipo = g.Key.ToString(), Quantidade = g.Count() })
                     .ToList()
@@ -346,4 +340,39 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
             return StatusCode(500, "Erro interno do servidor");
         }
     }
+
+    //private static IEnumerable<ProdutoListDto> ApplySorting(IEnumerable<ProdutoListDto> source, string? sortBy, bool desc)
+    //{
+    //    if (string.IsNullOrWhiteSpace(sortBy))
+    //        return source.OrderBy(p => p.Nome);
+
+    //    sortBy = sortBy.ToLowerInvariant();
+    //    return (sortBy, desc) switch
+    //    {
+    //        ("nome", false) => source.OrderBy(p => p.Nome),
+    //        ("nome", true) => source.OrderByDescending(p => p.Nome),
+    //        ("preco", false) => source.OrderBy(p => p.PrecoVenda),
+    //        ("preco", true) => source.OrderByDescending(p => p.PrecoVenda),
+    //        ("tipo", false) => source.OrderBy(p => p.Tipo),
+    //        ("tipo", true) => source.OrderByDescending(p => p.Tipo),
+    //        ("estoque", false) => source.OrderBy(p => p.EstoqueAtual),
+    //        ("estoque", true) => source.OrderByDescending(p => p.EstoqueAtual),
+    //        _ => source.OrderBy(p => p.Nome)
+    //    };
+    //}
+
+    //private static PagedResult<ProdutoListDto> Paginate(IEnumerable<ProdutoListDto> source, int page, int pageSize)
+    //{
+    //    page = page < 1 ? 1 : page;
+    //    pageSize = pageSize < 1 ? 50 : pageSize;
+    //    var total = source.Count();
+    //    var items = source.Skip((page - 1) * pageSize).Take(pageSize);
+    //    return new PagedResult<ProdutoListDto>
+    //    {
+    //        Items = items.ToList(),
+    //        TotalItems = total,
+    //        Page = page,
+    //        PageSize = pageSize
+    //    };
+    //}
 }
