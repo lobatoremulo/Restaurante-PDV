@@ -69,13 +69,13 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         {
             var produto = await _produtoService.GetByCodigoBarrasAsync(codigoBarras);
             if (produto == null)
-                return NotFound("Produto n„o encontrado");
+                return NotFound("Produto n√£o encontrado");
 
             return Ok(produto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar produto por cÛdigo de barras: {CodigoBarras}", codigoBarras);
+            _logger.LogError(ex, "Erro ao buscar produto por c√≥digo de barras: {CodigoBarras}", codigoBarras);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -135,7 +135,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar produtos disponÌveis para delivery");
+            _logger.LogError(ex, "Erro ao buscar produtos dispon√≠veis para delivery");
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -165,7 +165,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     public async Task<ActionResult<ProdutoDto>> Update(int id, [FromBody] ProdutoUpdateDto produtoDto)
     {
         if (id != produtoDto.Id)
-            return BadRequest("ID do produto n„o confere");
+            return BadRequest("ID do produto n√£o confere");
 
         try
         {
@@ -281,7 +281,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao verificar cÛdigo de barras: {CodigoBarras}", codigoBarras);
+            _logger.LogError(ex, "Erro ao verificar c√≥digo de barras: {CodigoBarras}", codigoBarras);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -336,43 +336,9 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar estatÌsticas de produtos");
+            _logger.LogError(ex, "Erro ao buscar estat√≠sticas de produtos");
             return StatusCode(500, "Erro interno do servidor");
         }
     }
 
-    //private static IEnumerable<ProdutoListDto> ApplySorting(IEnumerable<ProdutoListDto> source, string? sortBy, bool desc)
-    //{
-    //    if (string.IsNullOrWhiteSpace(sortBy))
-    //        return source.OrderBy(p => p.Nome);
-
-    //    sortBy = sortBy.ToLowerInvariant();
-    //    return (sortBy, desc) switch
-    //    {
-    //        ("nome", false) => source.OrderBy(p => p.Nome),
-    //        ("nome", true) => source.OrderByDescending(p => p.Nome),
-    //        ("preco", false) => source.OrderBy(p => p.PrecoVenda),
-    //        ("preco", true) => source.OrderByDescending(p => p.PrecoVenda),
-    //        ("tipo", false) => source.OrderBy(p => p.Tipo),
-    //        ("tipo", true) => source.OrderByDescending(p => p.Tipo),
-    //        ("estoque", false) => source.OrderBy(p => p.EstoqueAtual),
-    //        ("estoque", true) => source.OrderByDescending(p => p.EstoqueAtual),
-    //        _ => source.OrderBy(p => p.Nome)
-    //    };
-    //}
-
-    //private static PagedResult<ProdutoListDto> Paginate(IEnumerable<ProdutoListDto> source, int page, int pageSize)
-    //{
-    //    page = page < 1 ? 1 : page;
-    //    pageSize = pageSize < 1 ? 50 : pageSize;
-    //    var total = source.Count();
-    //    var items = source.Skip((page - 1) * pageSize).Take(pageSize);
-    //    return new PagedResult<ProdutoListDto>
-    //    {
-    //        Items = items.ToList(),
-    //        TotalItems = total,
-    //        Page = page,
-    //        PageSize = pageSize
-    //    };
-    //}
 }
