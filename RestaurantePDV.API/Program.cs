@@ -31,6 +31,10 @@ builder.Services.AddScoped<IFuncionarioRepository, FuncionarioRepository>();
 builder.Services.AddScoped<IEscalaTrabalhoRepository, EscalaTrabalhoRepository>();
 builder.Services.AddScoped<IClienteRestricaoRepository, ClienteRestricaoRepository>();
 
+// Repositórios do Controle de Caixa
+builder.Services.AddScoped<ICaixaRepository, CaixaRepository>();
+builder.Services.AddScoped<IMovimentoCaixaRepository, MovimentoCaixaRepository>();
+
 // Services
 builder.Services.AddScoped<IComandaService, ComandaService>();
 builder.Services.AddScoped<IVendaService, VendaService>();
@@ -40,6 +44,10 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 builder.Services.AddScoped<IEscalaTrabalhoService, EscalaTrabalhoService>();
 builder.Services.AddScoped<IClienteRestricaoService, ClienteRestricaoService>();
+
+// Serviços do Controle de Caixa
+builder.Services.AddScoped<ICaixaService, CaixaService>();
+builder.Services.AddScoped<IMovimentoCaixaService, MovimentoCaixaService>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

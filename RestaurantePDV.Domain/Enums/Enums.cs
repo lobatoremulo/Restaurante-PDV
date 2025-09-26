@@ -87,3 +87,22 @@ public enum MotivoRestricaoCliente
     SolicitacaoCliente = 4,
     Outros = 5
 }
+
+// Enums para Controle de Caixa
+public enum StatusCaixa
+{
+    Aberto = 1,
+    Fechado = 2,
+    Bloqueado = 3
+}
+
+public enum TipoMovimentoCaixa
+{
+    entrada = 1,
+    Saida = 2,
+    Venda = 3,
+    Sangria = 4,
+    Suprimento = 5,
+    Abertura = 6,
+    Fechamento = 7
+}

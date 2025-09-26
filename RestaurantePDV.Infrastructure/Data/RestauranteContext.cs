@@ -27,6 +27,10 @@ public class RestauranteContext : DbContext
     public DbSet<EscalaTrabalho> EscalasTrabalho { get; set; }
     public DbSet<ClienteRestricao> ClientesRestricoes { get; set; }
 
+    // Entidades do Controle de Caixa
+    public DbSet<Caixa> Caixas { get; set; }
+    public DbSet<MovimentoCaixa> MovimentosCaixa { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -343,6 +347,54 @@ public class RestauranteContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.VendaId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configurações para Caixa
+        modelBuilder.Entity<Caixa>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ValorAbertura).HasPrecision(18, 2);
+            entity.Property(e => e.ValorFechamento).HasPrecision(18, 2);
+            entity.Property(e => e.TotalVendas).HasPrecision(18, 2);
+            entity.Property(e => e.TotalSangrias).HasPrecision(18, 2);
+            entity.Property(e => e.TotalSuprimentos).HasPrecision(18, 2);
+            entity.Property(e => e.ObservacoesAbertura).HasMaxLength(500);
+            entity.Property(e => e.ObservacoesFechamento).HasMaxLength(500);
+
+            entity.HasOne(e => e.OperadorAbertura)
+                .WithMany()
+                .HasForeignKey(e => e.OperadorAberturaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.OperadorFechamento)
+                .WithMany()
+                .HasForeignKey(e => e.OperadorFechamentoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configurações para MovimentoCaixa
+        modelBuilder.Entity<MovimentoCaixa>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Valor).HasPrecision(18, 2);
+            entity.Property(e => e.Descricao).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Observacoes).HasMaxLength(500);
+            entity.Property(e => e.NumeroDocumento).HasMaxLength(100);
+
+            entity.HasOne(e => e.Caixa)
+                .WithMany(c => c.Movimentos)
+                .HasForeignKey(e => e.CaixaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Venda)
+                .WithMany()
+                .HasForeignKey(e => e.VendaId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Operador)
+                .WithMany()
+                .HasForeignKey(e => e.OperadorId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 

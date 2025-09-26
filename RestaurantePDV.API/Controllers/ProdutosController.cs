@@ -131,8 +131,9 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     {
         try
         {
-            var produtos = await _produtoService.GetDisponivelDeliveryAsync();
-            return Ok(produtos);
+            //var produtos = await _produtoService.GetDisponivelDeliveryAsync();
+            //return Ok(produtos);
+            return Ok();
         }
         catch (Exception ex)
         {
@@ -323,7 +324,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
             var todosProdutos = await _produtoService.GetAllAsync();
             var produtosAtivos = await _produtoService.GetActiveAsync();
             var produtosEstoqueBaixo = await _produtoService.GetComEstoqueBaixoAsync();
-            var produtosDelivery = await _produtoService.GetDisponivelDeliveryAsync();
+            //var produtosDelivery = await _produtoService.GetDisponivelDeliveryAsync();
 
             var estatisticas = new
             {
@@ -331,7 +332,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
                 ProdutosAtivos = produtosAtivos.Count(),
                 ProdutosInativos = todosProdutos.Count() - produtosAtivos.Count(),
                 ProdutosEstoqueBaixo = produtosEstoqueBaixo.Count(),
-                ProdutosDelivery = produtosDelivery.Count(),
+                //ProdutosDelivery = produtosDelivery.Count(),
                 PorTipo = todosProdutos.GroupBy(p => p.Tipo)
                     .Select(g => new { Tipo = g.Key.ToString(), Quantidade = g.Count() })
                     .ToList()
