@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RestaurantePDV.API.Middleware;
 using RestaurantePDV.Application.Interfaces;
 using RestaurantePDV.Application.Services;
 using RestaurantePDV.Infrastructure.Data;
@@ -15,6 +17,12 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
+
+// ProblemDetails options (use RFC7807 by default)
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = false; // keep ApiController automatic 400
+});
 
 // Entity Framework
 builder.Services.AddDbContext<RestauranteContext>(options =>
@@ -48,6 +56,19 @@ builder.Services.AddScoped<IClienteRestricaoService, ClienteRestricaoService>();
 // Serviços do Controle de Caixa
 builder.Services.AddScoped<ICaixaService, CaixaService>();
 builder.Services.AddScoped<IMovimentoCaixaService, MovimentoCaixaService>();
+
+//// API Versioning
+//builder.Services.AddApiVersioning(options =>
+//{
+//    options.DefaultApiVersion = new ApiVersion(1, 0);
+//    options.AssumeDefaultVersionWhenUnspecified = true;
+//    options.ReportApiVersions = true;
+//    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+//}).AddApiExplorer(setup =>
+//{
+//    setup.GroupNameFormat = "'v'VVV";
+//    setup.SubstituteApiVersionInUrl = true;
+//});
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -116,6 +137,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Global exception handler
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -126,13 +150,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
-

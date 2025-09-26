@@ -7,7 +7,6 @@ using RestaurantePDV.Domain.Enums;
 namespace RestaurantePDV.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 [Authorize]
 public class ProdutosController(IProdutoService produtoService, ILogger<ProdutosController> logger) : ControllerBase
 {
@@ -15,7 +14,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     private readonly ILogger<ProdutosController> _logger = logger;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -30,7 +29,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("ativos")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetActive()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetActive([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -70,19 +69,19 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         {
             var produto = await _produtoService.GetByCodigoBarrasAsync(codigoBarras);
             if (produto == null)
-                return NotFound("Produto n„o encontrado");
+                return NotFound("Produto n√£o encontrado");
 
             return Ok(produto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar produto por cÛdigo de barras: {CodigoBarras}", codigoBarras);
+            _logger.LogError(ex, "Erro ao buscar produto por c√≥digo de barras: {CodigoBarras}", codigoBarras);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
 
     [HttpGet("tipo/{tipo}")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByTipo(TipoProduto tipo)
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByTipo(TipoProduto tipo, [FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -97,7 +96,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("buscar/{nome}")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByNome(string nome)
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetByNome(string nome, [FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -112,7 +111,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("estoque-baixo")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetComEstoqueBaixo()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetComEstoqueBaixo([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
@@ -127,17 +126,16 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("delivery")]
-    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetDisponivelDelivery()
+    public async Task<ActionResult<IEnumerable<ProdutoListDto>>> GetDisponivelDelivery([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string? sortBy = null, [FromQuery] bool desc = false)
     {
         try
         {
-            //var produtos = await _produtoService.GetDisponivelDeliveryAsync();
-            //return Ok(produtos);
-            return Ok();
+            var produtos = await _produtoService.GetDisponivelDeliveryAsync();
+            return Ok(produtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar produtos disponÌveis para delivery");
+            _logger.LogError(ex, "Erro ao buscar produtos dispon√≠veis para delivery");
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -146,13 +144,10 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     [Authorize(Roles = "Admin,Gerente")]
     public async Task<ActionResult<ProdutoDto>> Create([FromBody] ProdutoCreateDto produtoDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         try
         {
             var produto = await _produtoService.CreateAsync(produtoDto);
-            return CreatedAtAction(nameof(GetById), new { id = produto.Id }, produto);
+            return Ok(produto);
         }
         catch (InvalidOperationException ex)
         {
@@ -170,10 +165,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     public async Task<ActionResult<ProdutoDto>> Update(int id, [FromBody] ProdutoUpdateDto produtoDto)
     {
         if (id != produtoDto.Id)
-            return BadRequest("ID do produto n„o confere");
-
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest("ID do produto n√£o confere");
 
         try
         {
@@ -239,9 +231,6 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     [Authorize(Roles = "Admin,Gerente,UsuarioComum")]
     public async Task<ActionResult<ProdutoDto>> AtualizarEstoque([FromBody] ProdutoEstoqueDto estoqueDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         try
         {
             var produto = await _produtoService.AtualizarEstoqueAsync(estoqueDto);
@@ -283,7 +272,7 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     }
 
     [HttpGet("verificar-codigo-barras/{codigoBarras}")]
-    public async Task<ActionResult<bool>> VerificarCodigoBarras(string codigoBarras, [FromQuery] int? excludeId = null)
+    public async Task<ActionResult<object>> VerificarCodigoBarras(string codigoBarras, [FromQuery] int? excludeId = null)
     {
         try
         {
@@ -292,12 +281,13 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao verificar cÛdigo de barras: {CodigoBarras}", codigoBarras);
+            _logger.LogError(ex, "Erro ao verificar c√≥digo de barras: {CodigoBarras}", codigoBarras);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
 
     [HttpGet("tipos")]
+    [ResponseCache(Duration = 3600)]
     public ActionResult<object> GetTipos()
     {
         try
@@ -321,10 +311,15 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
     {
         try
         {
-            var todosProdutos = await _produtoService.GetAllAsync();
-            var produtosAtivos = await _produtoService.GetActiveAsync();
-            var produtosEstoqueBaixo = await _produtoService.GetComEstoqueBaixoAsync();
-            //var produtosDelivery = await _produtoService.GetDisponivelDeliveryAsync();
+            var todosProdutosTask = _produtoService.GetAllAsync();
+            var produtosAtivosTask = _produtoService.GetActiveAsync();
+            var produtosEstoqueBaixoTask = _produtoService.GetComEstoqueBaixoAsync();
+
+            await Task.WhenAll(todosProdutosTask, produtosAtivosTask, produtosEstoqueBaixoTask);
+
+            var todosProdutos = await todosProdutosTask;
+            var produtosAtivos = await produtosAtivosTask;
+            var produtosEstoqueBaixo = await produtosEstoqueBaixoTask;
 
             var estatisticas = new
             {
@@ -332,7 +327,6 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
                 ProdutosAtivos = produtosAtivos.Count(),
                 ProdutosInativos = todosProdutos.Count() - produtosAtivos.Count(),
                 ProdutosEstoqueBaixo = produtosEstoqueBaixo.Count(),
-                //ProdutosDelivery = produtosDelivery.Count(),
                 PorTipo = todosProdutos.GroupBy(p => p.Tipo)
                     .Select(g => new { Tipo = g.Key.ToString(), Quantidade = g.Count() })
                     .ToList()
@@ -342,8 +336,9 @@ public class ProdutosController(IProdutoService produtoService, ILogger<Produtos
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar estatÌsticas de produtos");
+            _logger.LogError(ex, "Erro ao buscar estat√≠sticas de produtos");
             return StatusCode(500, "Erro interno do servidor");
         }
     }
+
 }

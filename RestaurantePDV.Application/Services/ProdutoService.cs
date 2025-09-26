@@ -16,7 +16,7 @@ public interface IProdutoService
     Task<IEnumerable<ProdutoListDto>> GetByTipoAsync(TipoProduto tipo);
     Task<IEnumerable<ProdutoListDto>> GetByNomeAsync(string nome);
     Task<IEnumerable<ProdutoListDto>> GetComEstoqueBaixoAsync();
-    //Task<IEnumerable<ProdutoListDto>> GetDisponivelDeliveryAsync()
+    Task<IEnumerable<ProdutoListDto>> GetDisponivelDeliveryAsync();
     Task<ProdutoDto> InativarAsync(int id);
     Task<ProdutoDto> AtivarAsync(int id);
     Task<ProdutoDto> AtualizarEstoqueAsync(ProdutoEstoqueDto estoqueDto);
@@ -138,11 +138,11 @@ public class ProdutoService : IProdutoService
         return produtos.Select(MapToListDto);
     }
 
-    //public async Task<IEnumerable<ProdutoListDto>> GetDisponivelDeliveryAsync()
-    //{
-    //    var produtos = await _produtoRepository.GetDisponivelDeliveryAsync();
-    //    return produtos.Select(MapToListDto);
-    //}
+    public async Task<IEnumerable<ProdutoListDto>> GetDisponivelDeliveryAsync()
+    {
+        var produtos = await _produtoRepository.GetDisponivelDeliveryAsync();
+        return produtos.Select(MapToListDto);
+    }
 
     public async Task<ProdutoDto> InativarAsync(int id)
     {
