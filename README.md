@@ -309,6 +309,19 @@ Resposta:
 
 ## 🔄 Fluxo Completo de Operação
 
+> **Nota:** O diagrama abaixo utiliza [Mermaid](https://mermaid-js.github.io/mermaid/) e pode não ser renderizado corretamente em todas as plataformas. Caso não visualize o diagrama, consulte a descrição textual do fluxo logo abaixo.
+
+**Descrição textual do fluxo de operação:**
+1. Cliente faz Pedido
+2. Criar Comanda
+3. Adicionar Itens
+4. Fechar Comanda
+5. Preparar Pagamento
+6. Processar Pagamento
+7. Criar Venda
+8. Registrar no Caixa
+9. Baixar Estoque
+10. Finalizar Transação
 ```mermaid
 graph TD
     A[Cliente faz Pedido] --> B[Criar Comanda]
