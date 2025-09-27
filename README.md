@@ -96,8 +96,8 @@ O sistema segue a arquitetura Clean Architecture com as seguintes camadas:
 
 ### 1. Clone o Repositório
 ```bash
-git clone https://github.com/lobatoremulo/Restaurante-PDV.git
-cd Restaurante-PDV
+git clone <repository-url>
+cd <repository-folder>
 ```
 
 ### 2. Configure o Banco de Dados
