@@ -52,4 +52,5 @@ public class Venda : BaseEntity
     public virtual Comanda? Comanda { get; set; }
     public virtual ICollection<ItemVenda> Itens { get; set; } = new List<ItemVenda>();
     public virtual ICollection<MovimentoEstoque> MovimentosEstoque { get; set; } = new List<MovimentoEstoque>();
+    public virtual ICollection<PagamentoVenda> Pagamentos { get; set; } = new List<PagamentoVenda>();
 }
