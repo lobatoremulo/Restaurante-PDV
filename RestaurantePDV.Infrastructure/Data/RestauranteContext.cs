@@ -17,6 +17,7 @@ public class RestauranteContext : DbContext
     public DbSet<MovimentoEstoque> MovimentosEstoque { get; set; }
     public DbSet<Venda> Vendas { get; set; }
     public DbSet<ItemVenda> ItensVenda { get; set; }
+    public DbSet<PagamentoVenda> PagamentosVenda { get; set; }
     public DbSet<Comanda> Comandas { get; set; }
     public DbSet<ItemComanda> ItensComanda { get; set; }
     public DbSet<ContaPagar> ContasPagar { get; set; }
@@ -260,6 +261,23 @@ public class RestauranteContext : DbContext
                 .WithMany(p => p.ItensVenda)
                 .HasForeignKey(e => e.ProdutoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configurações para PagamentoVenda
+        modelBuilder.Entity<PagamentoVenda>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Valor).HasPrecision(18, 2);
+            entity.Property(e => e.ValorRecebido).HasPrecision(18, 2);
+            entity.Property(e => e.NumeroDocumento).HasMaxLength(100);
+            entity.Property(e => e.Observacoes).HasMaxLength(200);
+
+            entity.HasOne(e => e.Venda)
+                .WithMany(v => v.Pagamentos)
+                .HasForeignKey(e => e.VendaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.VendaId, e.FormaPagamento });
         });
 
         // Configurações para Comanda
